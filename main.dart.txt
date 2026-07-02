@@ -1,0 +1,771 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(ElderlyCareApp());
+
+class ElderlyCareApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'CompanionCare',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.teal),
+          useMaterial3: true,
+        ),
+        home: WelcomeScreen(),
+        routes: appRoutes,
+      );
+
+  static final appRoutes = <String, WidgetBuilder>{
+    '/home': (context) => HomeScreen(),
+    '/checkin': (context) => CheckInScreen(),
+    '/music_playlist': (context) => MusicPlaylistScreen(),
+    '/memory_lane': (context) => MemoryLaneScreen(),
+    '/contacts/emergency': (context) =>
+        ContactsScreen(featureTitle: 'Emergency', nextRoute: '/emergency'),
+    '/contacts/video': (context) =>
+        ContactsScreen(featureTitle: 'Video Call', nextRoute: '/video'),
+    '/contacts/support': (context) =>
+        ContactsScreen(featureTitle: 'Support', nextRoute: '/support'),
+    '/video': (context) => VideoCallScreen(),
+    '/medication': (context) => MedicationScreen(),
+    '/emergency': (context) => EmergencyScreen(),
+    '/activity': (context) => ActivityLogScreen(),
+    '/settings': (context) => SettingsScreen(),
+    '/support': (context) => SupportScreen(),
+    '/welcome': (context) => WelcomeScreen(),
+  };
+}
+
+class WelcomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        backgroundColor: Colors.teal[50],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Welcome to CompanionCare!',
+                style: titleTextStyle(Colors.teal[900])),
+            SizedBox(height: 20),
+            StyledButton(
+                text: 'Get Started',
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/home')),
+          ],
+        ),
+      );
+}
+
+class HomeScreen extends StatelessWidget {
+  final Map<String, String?> contactManagementRoutes = {
+    'Emergency': '/contacts/emergency',
+    'Video Call': '/contacts/video',
+    'Support': '/contacts/support',
+  };
+
+  final List<Map<String, dynamic>> features = [
+    {'title': 'Check-in', 'route': '/checkin', 'icon': Icons.check_circle_outline},
+    {'title': 'Video Call', 'route': '/video', 'icon': Icons.video_call},
+    {'title': 'Medication', 'route': '/medication', 'icon': Icons.medical_services},
+    {'title': 'Emergency', 'route': '/emergency', 'icon': Icons.local_hospital},
+    {'title': 'Activity', 'route': '/activity', 'icon': Icons.directions_run},
+    {'title': 'Settings', 'route': '/settings', 'icon': Icons.settings},
+    {'title': 'Support', 'route': '/support', 'icon': Icons.support_agent},
+  ];
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text('Welcome to CompanionCare',
+              style: TextStyle(color: Colors.white)),
+          backgroundColor: Colors.teal,
+          iconTheme: IconThemeData(color: Colors.white),
+        ),
+        backgroundColor: Colors.teal[50],
+        body: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity! > 0) {
+              Navigator.pushNamed(context, '/music_playlist');
+            } else if (details.primaryVelocity! < 0) {
+              Navigator.pushNamed(context, '/memory_lane');
+            }
+          },
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: features.length,
+                  itemBuilder: (context, index) {
+                    final feature = features[index];
+                    final contactRoute =
+                        contactManagementRoutes[feature['title']];
+
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.all(8),
+                        backgroundColor: feature['title'] == 'Emergency'
+                            ? Colors.red
+                            : Colors.teal,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () {
+                        if (contactRoute != null) {
+                          Navigator.pushNamed(context, contactRoute);
+                        } else {
+                          Navigator.pushNamed(
+                              context, feature['route'] as String);
+                        }
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(feature['icon'] as IconData?,
+                              size: 30, color: Colors.white),
+                          SizedBox(height: 4),
+                          Text(
+                            feature['title'] as String,
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                right: 20,
+                child: FloatingActionButton(
+                  heroTag: "music_fab",
+                  backgroundColor: Colors.teal,
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/music_playlist'),
+                  child: Icon(Icons.music_note, color: Colors.white),
+                ),
+              ),
+              Positioned(
+                bottom: 20,
+                left: 20,
+                child: FloatingActionButton(
+                  heroTag: "memory_fab",
+                  backgroundColor: Colors.teal,
+                  onPressed: () => Navigator.pushNamed(context, '/memory_lane'),
+                  child: Icon(Icons.image, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class MusicPlaylistScreen extends StatelessWidget {
+  final List<String> songs = [
+    'Song 1 - Artist 1',
+    'Song 2 - Artist 2',
+    'Song 3 - Artist 3',
+    'Song 4 - Artist 4',
+    'Song 5 - Artist 5',
+  ];
+
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Music Playlist',
+        body: ListView.builder(
+          itemCount: songs.length,
+          itemBuilder: (context, index) =>
+              CardItem(child: Text(songs[index], style: itemTextStyle())),
+        ),
+      );
+}
+
+class MemoryLaneScreen extends StatelessWidget {
+  final List<String> imageUrls = [
+    'https://www.gstatic.com/flutter-onestack-prototype/genui/example_1.jpg',
+    'https://www.gstatic.com/flutter-onestack-prototype/genui/example_1.jpg',
+    'https://www.gstatic.com/flutter-onestack-prototype/genui/example_1.jpg',
+    'https://www.gstatic.com/flutter-onestack-prototype/genui/example_1.jpg',
+    'https://www.gstatic.com/flutter-onestack-prototype/genui/example_1.jpg',
+  ];
+
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Memory Lane',
+        body: GridView.builder(
+          padding: EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: imageUrls.length,
+          itemBuilder: (context, index) => Card(
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.network(
+                imageUrls[index],
+                fit: BoxFit.cover,
+                errorBuilder: (BuildContext context, Object exception,
+                        StackTrace? stackTrace) =>
+                    const Text('Failed to load image'),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+class ActivityLogScreen extends StatefulWidget {
+  @override
+  _ActivityLogScreenState createState() => _ActivityLogScreenState();
+}
+
+class _ActivityLogScreenState extends State<ActivityLogScreen> {
+  final List<ActivityItem> _activities = [
+    ActivityItem('Take a walk'),
+    ActivityItem('Drink water'),
+    ActivityItem('Eat a healthy meal'),
+    ActivityItem('Take medication'),
+    ActivityItem('Do light stretching'),
+    ActivityItem('Call a family member'),
+    ActivityItem('Read or listen to music'),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Daily Activity Log',
+        body: ListView.builder(
+          padding: EdgeInsets.all(16),
+          itemCount: _activities.length,
+          itemBuilder: (context, index) => Card(
+            margin: EdgeInsets.symmetric(vertical: 6),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            color: Colors.white,
+            child: CheckboxListTile(
+              title: Text(_activities[index].name, style: itemTextStyle()),
+              value: _activities[index].isDone,
+              onChanged: (bool? value) =>
+                  setState(() => _activities[index].isDone = value ?? false),
+              activeColor: Colors.teal,
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          ),
+        ),
+      );
+}
+
+class ActivityItem {
+  final String name;
+  bool isDone;
+  ActivityItem(this.name, {this.isDone = false});
+}
+
+class MedicationScreen extends StatelessWidget {
+  final List<Medicine> medicines = [
+    Medicine(name: 'Aspirin', icon: Icons.healing, timings: ['8:00 AM', '8:00 PM']),
+    Medicine(name: 'Vitamin D', icon: Icons.brightness_5, timings: ['9:00 AM']),
+    Medicine(
+        name: 'Blood Pressure Med', icon: Icons.favorite, timings: ['7:00 AM']),
+  ];
+
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Medication Reminder',
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ListView.builder(
+            itemCount: medicines.length,
+            itemBuilder: (context, index) => MedicationCard(medicines[index]),
+          ),
+        ),
+      );
+}
+
+class Medicine {
+  final String name;
+  final IconData icon;
+  final List<String> timings;
+  Medicine({required this.name, required this.icon, required this.timings});
+}
+
+class ContactsScreen extends StatefulWidget {
+  final String featureTitle;
+  final String nextRoute;
+
+  ContactsScreen({required this.featureTitle, required this.nextRoute});
+
+  @override
+  _ContactsScreenState createState() => _ContactsScreenState();
+}
+
+class _ContactsScreenState extends State<ContactsScreen> {
+  List<Contact> contacts = [];
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+
+  void _addContact() {
+    final name = _nameController.text.trim();
+    final phone = _phoneController.text.trim();
+    if (name.isEmpty || phone.isEmpty) {
+      showSnackBar('Please enter both name and phone number');
+      return;
+    }
+    setState(() {
+      contacts.add(Contact(name: name, phone: phone));
+      _nameController.clear();
+      _phoneController.clear();
+    });
+    FocusScope.of(context).unfocus();
+  }
+
+  void _removeContact(int index) => setState(() => contacts.removeAt(index));
+
+  void showSnackBar(String message) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(message)));
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: '${widget.featureTitle} Contacts',
+        body: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Text('Add contacts for ${widget.featureTitle.toLowerCase()}',
+                  style: subtitleTextStyle()),
+              SizedBox(height: 8),
+              TextField(
+                controller: _nameController,
+                decoration: inputDecoration('Name'),
+                textInputAction: TextInputAction.next,
+              ),
+              SizedBox(height: 8),
+              TextField(
+                controller: _phoneController,
+                decoration: inputDecoration('Phone Number'),
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _addContact(),
+              ),
+              SizedBox(height: 8),
+              StyledButton(
+                icon: Icons.add,
+                text: 'Add Contact',
+                onPressed: _addContact,
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: contacts.isEmpty
+                    ? Center(
+                        child: Text('No contacts added yet.',
+                            style: itemTextStyle()),
+                      )
+                    : ListView.builder(
+                        itemCount: contacts.length,
+                        itemBuilder: (context, index) => ContactCard(
+                            contact: contacts[index],
+                            onDelete: () => _removeContact(index)),
+                      ),
+              ),
+              StyledButton(
+                text: 'Proceed to ${widget.featureTitle}',
+                onPressed: () {
+                  if (contacts.isEmpty) {
+                    showSnackBar('Add at least one contact to proceed');
+                    return;
+                  }
+                  Navigator.pushNamed(context, widget.nextRoute);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+
+  InputDecoration inputDecoration(String label) => InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      );
+}
+
+class Contact {
+  final String name;
+  final String phone;
+  Contact({required this.name, required this.phone});
+}
+
+class CheckInScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Check-in & Wellness',
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.favorite, size: 80, color: Colors.teal[700]),
+                SizedBox(height: 20),
+                Text('How are you feeling today?', style: titleTextStyle()),
+                SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MoodButton(context, 'Great', Icons.sentiment_very_satisfied),
+                    MoodButton(context, 'Good', Icons.sentiment_satisfied),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MoodButton(context, 'Okay', Icons.sentiment_neutral),
+                    MoodButton(context, 'Not Well', Icons.sentiment_dissatisfied),
+                  ],
+                ),
+                SizedBox(height: 30),
+                Text(
+                  'Tap a mood to save your check-in.',
+                  style: TextStyle(fontSize: 16, color: Colors.teal[700]),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+}
+
+class VideoCallScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Video Call',
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(Icons.videocam, size: 80, color: Colors.teal[700]),
+              SizedBox(height: 20),
+              Text('Initiating video call...', style: titleTextStyle()),
+              SizedBox(height: 20),
+              StyledButton(
+                  text: 'End Call', onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+        ),
+      );
+}
+
+class EmergencyScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Emergency',
+        backgroundColor: Colors.red[50],
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(Icons.local_hospital, size: 80, color: Colors.red[700]),
+              SizedBox(height: 20),
+              Text('Emergency Alert!',
+                  style: titleTextStyle(Colors.red[900], 28)),
+              SizedBox(height: 20),
+              Text(
+                'Calling emergency services...',
+                style: TextStyle(fontSize: 18, color: Colors.red[700]),
+              ),
+              SizedBox(height: 20),
+              StyledButton(
+                  backgroundColor: Colors.red,
+                  text: 'Cancel',
+                  onPressed: () => Navigator.pop(context)),
+            ],
+          ),
+        ),
+      );
+}
+
+class SettingsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Settings',
+        body: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'App Settings',
+                style: titleTextStyle(),
+              ),
+              SizedBox(height: 20),
+              SettingsTile(Icons.notifications, 'Notifications', () {}),
+              Divider(),
+              SettingsTile(Icons.accessibility, 'Accessibility', () {}),
+              Divider(),
+              SettingsTile(Icons.info, 'About', () {}),
+            ],
+          ),
+        ),
+      );
+}
+
+class SupportScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Screen(
+        screenTitle: 'Support',
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.support_agent, size: 80, color: Colors.teal[700]),
+                SizedBox(height: 20),
+                Text('Need Help?', style: titleTextStyle()),
+                SizedBox(height: 20),
+                Text(
+                  'Contact our support team for assistance.',
+                  style: TextStyle(fontSize: 18, color: Colors.teal[700]),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 30),
+                StyledButton(
+                  icon: Icons.phone,
+                  text: 'Call Support',
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+}
+
+class Screen extends StatelessWidget {
+  final String? screenTitle;
+  final Widget? body;
+  final Color? backgroundColor;
+  final Widget? child;
+
+  const Screen({
+    Key? key,
+    this.screenTitle,
+    this.body,
+    this.backgroundColor,
+    this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: screenTitle != null
+            ? AppBar(
+                title: Text(screenTitle!, style: TextStyle(color: Colors.white)),
+                backgroundColor: Colors.teal,
+                iconTheme: IconThemeData(color: Colors.white),
+              )
+            : null,
+        backgroundColor: backgroundColor ?? Colors.teal[50],
+        body: body ?? child,
+      );
+}
+
+class StyledButton extends StatelessWidget {
+  final IconData? icon;
+  final String text;
+  final VoidCallback onPressed;
+  final Color? backgroundColor;
+
+  const StyledButton({
+    Key? key,
+    this.icon,
+    required this.text,
+    required this.onPressed,
+    this.backgroundColor = Colors.teal,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.white),
+        label: Text(text, style: TextStyle(fontSize: 18, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          minimumSize: Size(double.infinity, 50),
+        ),
+        onPressed: onPressed,
+      );
+}
+
+class CardItem extends StatelessWidget {
+  final Widget child;
+  const CardItem({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Card(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: Colors.white,
+        child: ListTile(
+          title: child,
+        ),
+      );
+}
+
+class SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const SettingsTile(this.icon, this.title, this.onTap);
+
+  @override
+  Widget build(BuildContext context) => ListTile(
+        leading: Icon(icon, color: Colors.teal),
+        title: Text(title, style: itemTextStyle()),
+        onTap: onTap,
+      );
+}
+
+class MedicationCard extends StatelessWidget {
+  final Medicine medicine;
+  const MedicationCard(this.medicine);
+
+  @override
+  Widget build(BuildContext context) => Card(
+        margin: EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(medicine.icon, size: 48, color: Colors.teal[700]),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      medicine.name,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal[900],
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      children: medicine.timings.map<Widget>(
+                        (time) => Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.teal[300],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.access_time,
+                                  size: 18, color: Colors.white),
+                              SizedBox(width: 6),
+                              Text(
+                                time,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class ContactCard extends StatelessWidget {
+  final Contact contact;
+  final VoidCallback onDelete;
+  const ContactCard({Key? key, required this.contact, required this.onDelete})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Card(
+        color: Colors.white,
+        child: ListTile(
+          title: Text(contact.name, style: itemTextStyle()),
+          subtitle: Text(contact.phone, style: itemTextStyle(Colors.teal[700])),
+          trailing: IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: onDelete,
+          ),
+        ),
+      );
+}
+
+class MoodButton extends StatelessWidget {
+  final BuildContext context;
+  final String mood;
+  final IconData icon;
+
+  const MoodButton(this.context, this.mood, this.icon);
+
+  @override
+  Widget build(BuildContext context) => ElevatedButton.icon(
+        icon: Icon(icon, color: Colors.white),
+        label: Text(mood, style: TextStyle(fontSize: 18, color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.teal,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        onPressed: () => showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: Text('Check-in Saved!', style: titleTextStyle()),
+            content:
+                Text('You checked in as feeling $mood today.', style: itemTextStyle()),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Close', style: TextStyle(color: Colors.teal)),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+TextStyle titleTextStyle([Color? color, double fontSize = 24]) => TextStyle(
+    fontSize: fontSize, fontWeight: FontWeight.bold, color: color ?? Colors.teal[900]);
+
+TextStyle subtitleTextStyle() => TextStyle(
+    fontSize: 18, fontWeight: FontWeight.w600, color: Colors.teal[900]);
+
+TextStyle itemTextStyle([Color? color]) =>
+    TextStyle(fontSize: 20, color: color ?? Colors.teal[900]);
